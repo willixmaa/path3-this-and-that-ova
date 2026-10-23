@@ -62,11 +62,12 @@ if(m.personal){
  const wasSelected=btn.classList.contains("selected");
  document.querySelectorAll(".choice").forEach(b=>{b.classList.remove("selected","correct");});
  if(wasSelected){completed.delete(current);feedback.textContent="Choice cleared. Pick any picture you like.";document.getElementById("next").disabled=true;updateProgress();return;}
- btn.classList.add("selected","correct");completed.add(current);feedback.textContent=m.success;feedback.classList.remove("bad");document.getElementById("next").disabled=false;updateProgress();return;
+ btn.classList.add("selected","correct");completed.add(current);results[current]={attempts:1,answer:m.choices[j],correct:true,completedAt:new Date().toISOString()};feedback.textContent=m.success;feedback.classList.remove("bad");document.getElementById("next").disabled=false;updateProgress();return;
 }
 document.querySelectorAll(".choice").forEach(b=>b.classList.remove("selected","correct","wrong"));
 btn.classList.add("selected");
-if(j===m.correct){
+const rec=results[current]||(results[current]={attempts:0,correct:false});rec.attempts++;rec.answer=m.choices[j];rec.correct=j===m.correct;
+if(j===m.correct){rec.completedAt=new Date().toISOString();
  completed.add(current);btn.classList.add("correct");feedback.textContent=m.success;feedback.classList.remove("bad");document.getElementById("next").disabled=false;updateProgress();celebrate();
 }else{
  completed.delete(current);feedback.textContent="Not quite — that’s okay! Choose another answer, or try this one again.";feedback.classList.add("bad");document.getElementById("next").disabled=true;updateProgress();
