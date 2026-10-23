@@ -137,7 +137,7 @@ function checkSequence(){
 }
 function hint(){const m=missions[current];document.getElementById("hintText").textContent=m.hint||"Think about the story and try your best."}
 function updateProgress(){document.getElementById("progress").style.width=(completed.size/missions.length*100)+"%"}
-function nextMission(){if(current===2&&!results[2]?.correct){document.getElementById("sequenceStatus").textContent="Please arrange the story in the correct order before continuing.";return}if(current<missions.length-1)renderMission(current+1);else renderEnd();window.scrollTo({top:0,behavior:"smooth"})}
+function nextMission(){if(current===2&&!results[2]?.locked){document.getElementById("sequenceStatus").textContent="Please check your final order before continuing.";return}if(current<missions.length-1)renderMission(current+1);else renderEnd();window.scrollTo({top:0,behavior:"smooth"})}
 function renderEnd(){
  document.getElementById("count").textContent="ADVENTURE COMPLETE";document.getElementById("progress").style.width="100%";
  const score=missions.filter((m,i)=>results[i]?.correct).length;
