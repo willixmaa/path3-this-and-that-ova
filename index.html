@@ -117,19 +117,27 @@ function choose(j){
  const m=missions[current],feedback=document.getElementById("feedback");
  if(results[current]?.locked)return;
  const btn=document.getElementById("choice"+j);
- if(!m.personal){document.querySelectorAll(".choice").forEach(b=>{b.classList.remove("selected","correct","wrong");b.disabled=true;});}
- btn.classList.add("selected");
+ if(!btn)return;
  if(m.personal){
-   btn.classList.toggle("selected");const selected=[...document.querySelectorAll(".choice.selected")].map(b=>Number(b.id.replace("choice","")));
-   results[current]={attempts:1,answer:selected.map(i=>m.choices[i]).join(", "),selected,correct:true,locked:false,personal:true,completedAt:new Date().toISOString()};
-   completed.add(current);feedback.textContent=m.success;feedback.classList.remove("bad");document.getElementById("next").disabled=selected.length===0;updateProgress();return;
+   btn.classList.toggle("selected");
+   const selected=[...document.querySelectorAll(".choice.selected")].map(b=>Number(b.id.replace("choice","")));
+   results[current]={attempts:1,answer:selected.map(i=>m.choices[i]).join(", "),selected,correct:null,locked:false,personal:true,completedAt:new Date().toISOString()};
+   completed.add(current);
+   feedback.textContent=selected.length?m.success:"Choose any pictures you like. There are no right or wrong answers.";
+   feedback.classList.remove("bad");
+   document.getElementById("next").disabled=selected.length===0;
+   updateProgress();
+   return;
  }
+ document.querySelectorAll(".choice").forEach(b=>{b.classList.remove("selected","correct","wrong");b.disabled=true;});
+ btn.classList.add("selected");
  const isCorrect=j===m.correct;
  results[current]={attempts:1,answer:m.choices[j],correct:isCorrect,locked:true,completedAt:new Date().toISOString()};
  document.querySelectorAll(".choice").forEach((b,index)=>{if(index===m.correct)b.classList.add("correct");else if(index===j)b.classList.add("wrong");});
  if(isCorrect){completed.add(current);feedback.textContent=m.success;feedback.classList.remove("bad");celebrate();}
  else{completed.delete(current);feedback.textContent="Look again! The correct answer is “"+m.choices[m.correct]+"”. Read the question one more time and notice why it fits.";feedback.classList.add("bad");}
- document.getElementById("next").disabled=false;updateProgress();
+ document.getElementById("next").disabled=false;
+ updateProgress();
 }
 function renderSequence(){
  const el=document.getElementById("sequenceList"),locked=!!results[2]?.locked;
