@@ -128,7 +128,7 @@ function choose(j){
  results[current]={attempts:1,answer:m.choices[j],correct:isCorrect,locked:true,completedAt:new Date().toISOString()};
  document.querySelectorAll(".choice").forEach((b,index)=>{if(index===m.correct)b.classList.add("correct");else if(index===j)b.classList.add("wrong");});
  if(isCorrect){completed.add(current);feedback.textContent=m.success;feedback.classList.remove("bad");celebrate();}
- else{completed.delete(current);feedback.textContent="Good try! The correct answer is highlighted in green. Keep going!";feedback.classList.add("bad");}
+ else{completed.delete(current);feedback.textContent="Look again! The correct answer is “"+m.choices[m.correct]+"”. Read the question one more time and notice why it fits.";feedback.classList.add("bad");}
  document.getElementById("next").disabled=false;updateProgress();
 }
 function renderSequence(){
@@ -149,7 +149,7 @@ function checkSequence(){
  const right=order.join(",")==="0,1,2",status=document.getElementById("sequenceStatus"),feedback=document.getElementById("feedback"),next=document.getElementById("next");
  results[2]={attempts:1,answer:order.map(n=>missions[2].sequence[n]).join(" → "),correct:right,locked:true,completedAt:new Date().toISOString()};
  if(right){completed.add(2);status.textContent="🎉 Correct order! Your answer is locked.";status.className="sequence-status good";feedback.textContent=missions[2].success;feedback.classList.remove("bad");celebrate();}
- else{completed.delete(2);status.textContent="Order checked — this is your final answer. Green shows the correct position; red shows a misplaced event.";status.className="sequence-status bad";feedback.textContent="Good try! Look at the green and red cards to learn the correct order.";feedback.classList.add("bad");}
+ else{completed.delete(2);status.textContent="Your order has been checked and locked.";status.className="sequence-status bad";feedback.textContent="Let’s look at the story: first Bekku sees a mouse, next the girl reads a book, and finally Bekku and the girl enjoy milk. Compare that order with your cards.";feedback.classList.add("bad");}
  renderSequence();next.disabled=false;updateProgress();
 }
 function hint(){const m=missions[current];document.getElementById("hintText").textContent=m.hint||"Think about the story and try your best."}
