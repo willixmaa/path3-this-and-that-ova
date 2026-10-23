@@ -108,10 +108,10 @@ function goHome(){["lesson","howToPlay","teacherDashboard"].forEach(id=>document
 function renderMission(i){current=i;answered=completed.has(i);const m=missions[i];document.getElementById("count").textContent="MISSION "+(i+1)+" OF "+missions.length;document.getElementById("progress").style.width=(completed.size/missions.length*100)+"%";if(i===missions.length){renderEnd();return}
 let activity="";
 if(m.sequence){order=[0,1,2];activity='<div class="drag-instruction"><span class="instruction-icon">🧩</span><span><strong>Story puzzle</strong><br>Arrange the events as you think they happen. Press Check my order when ready. You cannot change your answer after checking.</span></div><div class="sequence-list" id="sequenceList"></div><button class="check-order-btn" id="checkOrder" onclick="checkSequence()" type="button">✓ Check my order</button><div class="sequence-status" id="sequenceStatus" aria-live="polite">✨ Arrange the cards, then check your final answer.</div><p class="small-note">Use the story illustrations to decide what happens first, next, and last.</p>'; }
-else {activity='<div class="choices">'+m.choices.map((c,j)=>'<button class="choice" id="choice'+j+'" onclick="choose('+j+')"><span class="letter">'+String.fromCharCode(65+j)+'</span><span>'+c+'</span></button>').join("")+'</div>'}
+else {activity='<div class="choices">'+m.choices.map((c,j)=>'<button class="choice '+(m.personal?"personal-choice":"") +'" id="choice'+j+'" onclick="choose('+j+')"><span class="letter">'+String.fromCharCode(65+j)+'</span><span>'+c+'</span></button>').join("")+'</div>'}
 document.getElementById("stage").innerHTML='<div class="workarea"><aside class="story-side"><div><div class="step-tag">'+m.tag+'</div><div class="side-emoji">'+m.emoji+'</div><h2>'+m.title+'</h2><p>'+m.description+'</p></div></aside><section class="activity"><div class="eyebrow">Your mission</div><h3>'+m.question+'</h3>'+activity+'<p class="feedback" id="feedback" aria-live="polite">'+(answered?m.success:"")+'</p><div class="actions"><button class="secondary" onclick="hint()">Need a hint?</button><button class="next" id="next" onclick="nextMission()" '+(!answered&&!m.sequence?'disabled':'')+'>Continue →</button></div><p class="small-note" id="hintText"></p></section></div>';
 if(m.sequence){renderSequence();document.getElementById("next").disabled=!results[2]?.locked}
-if(answered&&!m.sequence){if(m.correct!==undefined){const b=document.getElementById("choice"+m.correct);if(b)b.classList.add("correct","selected")}else if(m.personal){const b=document.querySelector(".choice");if(b)b.classList.remove("selected")}}
+if(answered&&!m.sequence){if(m.correct!==undefined){const b=document.getElementById("choice"+m.correct);if(b)b.classList.add("correct","selected")}else if(m.personal){const chosen=results[i]?.selected||[];chosen.forEach(n=>{const b=document.getElementById("choice"+n);if(b)b.classList.add("selected")});document.querySelectorAll(".choice").forEach(b=>b.disabled=false);document.getElementById("next").disabled=chosen.length===0;}}
 }
 function choose(j){
  const m=missions[current],feedback=document.getElementById("feedback");
@@ -120,7 +120,7 @@ function choose(j){
  if(!m.personal){document.querySelectorAll(".choice").forEach(b=>{b.classList.remove("selected","correct","wrong");b.disabled=true;});}
  btn.classList.add("selected");
  if(m.personal){
-   btn.classList.add("selected");const selected=[...document.querySelectorAll(".choice.selected")].map(b=>Number(b.id.replace("choice","")));
+   btn.classList.toggle("selected");const selected=[...document.querySelectorAll(".choice.selected")].map(b=>Number(b.id.replace("choice","")));
    results[current]={attempts:1,answer:selected.map(i=>m.choices[i]).join(", "),selected,correct:true,locked:false,personal:true,completedAt:new Date().toISOString()};
    completed.add(current);feedback.textContent=m.success;feedback.classList.remove("bad");document.getElementById("next").disabled=selected.length===0;updateProgress();return;
  }
