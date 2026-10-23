@@ -67,6 +67,10 @@ body{background:radial-gradient(ellipse at 5% 8%,#ffe8a9 0,transparent 24%),radi
 .sequence-item.answer-misplaced{border-color:#ef786c!important}
 .sequence-item.answer-in-place .position{background:#b6edcf!important;color:#17613d!important}
 .sequence-item.answer-misplaced .position{background:#ffc7c0!important;color:#8e2e29!important}
+/* Personal preference mission: multiple selections, no correct/incorrect color coding */
+.choice.personal-choice.selected{border-color:#416bd7!important;background:#edf3ff!important;box-shadow:0 0 0 3px #416bd71a!important;color:#29334f!important}
+.choice.personal-choice.selected .letter{background:#416bd7!important;color:#fff!important}
+.choice.personal-choice.selected:after{content:"✓";margin-left:auto;display:grid;place-items:center;width:24px;height:24px;border-radius:50%;background:#416bd7;color:#fff;font-size:.78rem;font-weight:950}
 </style>
 </head>
 <body>
@@ -94,7 +98,7 @@ const missions=[
 {title:"Look & Predict",tag:"Mission 1 · Look closely",emoji:"🐱 👧🏻",description:"Before we read, let’s look at the characters and make a prediction.",question:"Who are the main characters in this story?",choices:["A cat and a girl","A dog and a boy","A bird and a girl"],correct:0,success:"Great looking! Bekku is the cat, and the girl is our other main character.",hint:"Look at the cover picture. Which two characters can you see?"},
 {title:"Story Time",tag:"Mission 2 · Make a prediction",emoji:"🐱 🐭",description:"Listen to your teacher tell this part of the story. Use your imagination to predict what could happen next.",question:"Bekku sees a mouse. What might Bekku do?",choices:["Run after the mouse","Read a book","Drink a glass of juice"],correct:0,success:"Good prediction! Now listen to the story to discover what really happens.",hint:"Think about what cats often do when they see a mouse."},
 {title:"Put It in Order",tag:"Mission 3 · Be a story detective",emoji:"🧩 📖",description:"Stories have a beginning, a middle, and an end. Move these events into the order you think they happen, then check with your teacher and the book.",question:"Arrange the story events:",sequence:["Bekku sees a mouse","The girl reads a book","Bekku and the girl enjoy milk"],success:"Well done, story detective! Compare your order with the original story illustrations.",hint:"Use the book’s pictures to confirm the exact sequence."},
-{title:"What Do You Like?",tag:"Mission 4 · Your turn",emoji:"💛 ⭐",description:"The characters have things they like. What about you? Choose one picture and practise saying “I like …”",question:"Choose something you like:",choices:["📚 Reading","⚽ Football","🐱 Cats","🎵 Music","🌳 The park","🥛 Milk"],personal:true,success:"Lovely choice! Say it out loud: “I like …”"},
+{title:"What Do You Like?",tag:"Mission 4 · Your turn",emoji:"💛 ⭐",description:"The characters have things they like. What about you? Choose as many pictures as you like and practise saying “I like …”",question:"Choose all the things you like:",choices:["📚 Reading","⚽ Football","🐱 Cats","🎵 Music","🌳 The park","🥛 Milk"],personal:true,success:"Lovely choices! Say them out loud: “I like …” There are no right or wrong answers."},
 {title:"Finish the Story",tag:"Mission 5 · One last thought",emoji:"🐱 👧🏻 🥛",description:"You made it to the end! Think about Bekku and the girl. They may be different, but they share something.",question:"What do Bekku and the girl have in common?",choices:["They both like milk","They both drive a car","They both chase a mouse"],correct:0,success:"That’s right! They both enjoy milk. Great work, story explorer!"}
 ];
 let current=0,completed=new Set(),order=[0,1,2],answered=false,studentName="Unnamed student",sessionStart=null,results={},sequenceAttempts=0;
@@ -113,9 +117,13 @@ function choose(j){
  const m=missions[current],feedback=document.getElementById("feedback");
  if(results[current]?.locked)return;
  const btn=document.getElementById("choice"+j);
- document.querySelectorAll(".choice").forEach(b=>{b.classList.remove("selected","correct","wrong");b.disabled=true;});
+ if(!m.personal){document.querySelectorAll(".choice").forEach(b=>{b.classList.remove("selected","correct","wrong");b.disabled=true;});}
  btn.classList.add("selected");
- if(m.personal){results[current]={attempts:1,answer:m.choices[j],correct:true,locked:true,completedAt:new Date().toISOString()};btn.classList.add("correct");completed.add(current);feedback.textContent=m.success;feedback.classList.remove("bad");document.getElementById("next").disabled=false;updateProgress();celebrate();return;}
+ if(m.personal){
+   btn.classList.add("selected");const selected=[...document.querySelectorAll(".choice.selected")].map(b=>Number(b.id.replace("choice","")));
+   results[current]={attempts:1,answer:selected.map(i=>m.choices[i]).join(", "),selected,correct:true,locked:false,personal:true,completedAt:new Date().toISOString()};
+   completed.add(current);feedback.textContent=m.success;feedback.classList.remove("bad");document.getElementById("next").disabled=selected.length===0;updateProgress();return;
+ }
  const isCorrect=j===m.correct;
  results[current]={attempts:1,answer:m.choices[j],correct:isCorrect,locked:true,completedAt:new Date().toISOString()};
  document.querySelectorAll(".choice").forEach((b,index)=>{if(index===m.correct)b.classList.add("correct");else if(index===j)b.classList.add("wrong");});
@@ -146,7 +154,7 @@ function checkSequence(){
 }
 function hint(){const m=missions[current];document.getElementById("hintText").textContent=m.hint||"Think about the story and try your best."}
 function updateProgress(){document.getElementById("progress").style.width=(completed.size/missions.length*100)+"%"}
-function nextMission(){if(current===2&&!results[2]?.locked){document.getElementById("sequenceStatus").textContent="Please check your final order before continuing.";return}if(current<missions.length-1)renderMission(current+1);else renderEnd();window.scrollTo({top:0,behavior:"smooth"})}
+function nextMission(){if(current===2&&!results[2]?.locked){document.getElementById("sequenceStatus").textContent="Please check your final order before continuing.";return}if(missions[current]?.personal){const chosen=[...document.querySelectorAll(".choice.selected")].map(b=>Number(b.id.replace("choice","")));if(!chosen.length){document.getElementById("feedback").textContent="Choose at least one thing you like before continuing.";return;}results[current]={attempts:1,answer:chosen.map(i=>missions[current].choices[i]).join(", "),selected:chosen,correct:true,personal:true,locked:true,completedAt:new Date().toISOString()};}if(current<missions.length-1)renderMission(current+1);else renderEnd();window.scrollTo({top:0,behavior:"smooth"})}
 function renderEnd(){
  document.getElementById("count").textContent="ADVENTURE COMPLETE";document.getElementById("progress").style.width="100%";
  const score=missions.filter((m,i)=>results[i]?.correct).length;
